@@ -181,6 +181,39 @@ a.btn{text-decoration:none}
 .subnote a{color:var(--teal)}
 .tabs button{white-space:nowrap}
 .passcell.gold.done{opacity:.75}
+/* ---- seasonal themes ---- */
+.daily.event{margin-top:6px;background:linear-gradient(180deg,rgba(255,154,60,.22),rgba(120,60,180,.22));border-color:rgba(255,170,90,.55)}
+.season-christmas .daily.event{background:linear-gradient(180deg,rgba(220,60,60,.22),rgba(80,160,255,.18));border-color:rgba(255,255,255,.45)}
+.season-halloween .logo .l1{background:linear-gradient(180deg,#ffb35a,#c25cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.season-halloween .logo .l2{color:#d6b8ff}
+.season-halloween .logo .tag{color:#ffcf9a}
+.season-christmas .logo .l1{background:linear-gradient(180deg,#ffffff,#9fd8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.season-christmas .logo .l2{color:#ff8a8a}
+.season-christmas .logo .tag{color:#d8efff}
+.season-halloween .logo .l1,.season-christmas .logo .l1{text-shadow:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.3)) drop-shadow(0 0 14px rgba(255,170,90,.35))}
+.season-halloween .logo .tag,.season-christmas .logo .tag{letter-spacing:1px}
+.season-halloween .logo .l2,.season-christmas .logo .l2{letter-spacing:8px;margin-left:8px}
+/* ---- rewarded ads: home chip, shop row, web sample ad ---- */
+.chip.adchip{border:1px solid rgba(255,255,255,.12);opacity:.75;font:inherit;color:inherit;gap:4px}
+.chip.adchip .adic{font-size:13px}
+.chip.adchip b{font-size:13px}
+.chip.adchip.ready{opacity:1;border-color:rgba(79,209,197,.7);background:linear-gradient(90deg,rgba(79,209,197,.35),rgba(156,132,255,.3));animation:adpulse 2s ease-in-out infinite}
+@keyframes adpulse{0%,100%{box-shadow:0 0 0 0 rgba(79,209,197,.0)}50%{box-shadow:0 0 0 4px rgba(79,209,197,.25)}}
+.item.adcoins{border:1px solid rgba(79,209,197,.45);background:linear-gradient(90deg,rgba(79,209,197,.12),rgba(156,132,255,.12))}
+.item.adcoins.used{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+#adSim{position:fixed;inset:0;z-index:9999;background:#05070d;color:#fff;display:flex;flex-direction:column;animation:adin .2s ease-out}
+@keyframes adin{from{opacity:0}to{opacity:1}}
+.adsim-top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 12px) 14px 10px}
+.adsim-tag{background:#ffcc33;color:#111;font-weight:900;font-size:12px;padding:3px 8px;border-radius:6px}
+.adsim-t{flex:1;font-weight:800;font-size:14px;color:#cfd6e6}
+.adsim-x{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:16px}
+.adsim-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;background:radial-gradient(circle at 50% 40%,#1d3b5c,#05070d 70%)}
+.adsim-art{font-size:64px;letter-spacing:6px;animation:adbob 1.6s ease-in-out infinite}
+@keyframes adbob{50%{transform:translateY(-8px)}}
+.adsim-body b{font-size:24px;font-weight:900}
+.adsim-body small{font-size:14px;color:#cfd6e6;max-width:280px;line-height:1.4}
+.adsim-bar{width:220px;height:6px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:8px}
+.adsim-bar i{display:block;height:100%;width:0;background:#4fd1c5;transition:width 5s linear}
 
 </style>
 </head>
@@ -191,6 +224,7 @@ a.btn{text-decoration:none}
   <div class="topbar">
     <div class="chip"><i class="ico coin"></i><b id="hCoins">0</b></div>
     <div class="chip"><i class="ico gem"></i><b id="hGems">0</b></div>
+    <button class="chip adchip" id="adCoinBtn" aria-label="Watch an ad for 40 coins"><span class="adic">📺</span><i class="ico coin"></i><b id="adCoinTxt">+40</b></button>
     <div class="sp"></div>
     <button class="round" id="setBtn" aria-label="Settings">⚙️</button>
   </div>
@@ -203,6 +237,7 @@ a.btn{text-decoration:none}
     </div>
     <button class="primary" id="playBtn">Play</button>
     <button class="daily" id="dailyBtn"><span class="dl">📅 Daily Challenge</span><small id="dailySub">…</small><em id="streakTag">🔥 0</em></button>
+    <button class="daily event hidden" id="eventBtn"><span class="dl" id="eventTitle">Event</span><small id="eventSub">…</small><em>➜</em><i class="badge" id="bEv"></i></button>
     <div class="grid">
       <button data-open="upgrades"><span>⬆️</span>Upgrades<i class="badge" id="bUp"></i></button>
       <button data-open="heroes"><span>🦸</span>Heroes</button>
@@ -269,8 +304,8 @@ const HEROES = {
 const HERO_IDS = Object.keys(HEROES);
 const HERO_SKINS = {
   pip:   [{ id: 'base', n: 'Classic', c1: '#ee8a3c', c2: '#fff1e0', c3: '#3b2a22' }, { id: 'arctic', n: 'Arctic', c1: '#e9eef5', c2: '#ffffff', c3: '#4a5a75', cost: { coins: 600 } }, { id: 'ember', n: 'Ember', c1: '#c94a3a', c2: '#ffd2a6', c3: '#2a1512', cost: { gems: 60 } }, { id: 'neon', n: 'Neon', c1: '#2b2d6e', c2: '#ff8be8', c3: '#0b0b26', neon: '#45f3ff', pass: true }],
-  bruno: [{ id: 'base', n: 'Classic', c1: '#9a6644', c2: '#e8c9a8', c3: '#2c1d14' }, { id: 'panda', n: 'Panda', c1: '#f4f2ee', c2: '#ffffff', c3: '#1f1f24', cost: { coins: 600 } }, { id: 'polar', n: 'Polar', c1: '#dfeaf2', c2: '#ffffff', c3: '#3b4b63', cost: { gems: 60 } }, { id: 'aurora', n: 'Aurora', c1: '#7fd8c8', c2: '#f1fff9', c3: '#1a2a3a', aurora: true, pass: true }],
-  nova:  [{ id: 'base', n: 'Classic', c1: '#6f8fd9', c2: '#e6ecff', c3: '#1d2440' }, { id: 'snowy', n: 'Snowy', c1: '#f3f5fa', c2: '#ffffff', c3: '#3a4258', cost: { coins: 600 } }, { id: 'dusk', n: 'Dusk', c1: '#8a5bc7', c2: '#f1dcff', c3: '#2a1840', cost: { gems: 60 } }],
+  bruno: [{ id: 'base', n: 'Classic', c1: '#9a6644', c2: '#e8c9a8', c3: '#2c1d14' }, { id: 'panda', n: 'Panda', c1: '#f4f2ee', c2: '#ffffff', c3: '#1f1f24', cost: { coins: 600 } }, { id: 'polar', n: 'Polar', c1: '#dfeaf2', c2: '#ffffff', c3: '#3b4b63', cost: { gems: 60 } }, { id: 'aurora', n: 'Aurora', c1: '#7fd8c8', c2: '#f1fff9', c3: '#1a2a3a', aurora: true, pass: true }, { id: 'santa', n: 'Santa', c1: '#c93a3a', c2: '#fff6ee', c3: '#3a1a14', santaHat: true, season: 'christmas' }],
+  nova:  [{ id: 'base', n: 'Classic', c1: '#6f8fd9', c2: '#e6ecff', c3: '#1d2440' }, { id: 'snowy', n: 'Snowy', c1: '#f3f5fa', c2: '#ffffff', c3: '#3a4258', cost: { coins: 600 } }, { id: 'dusk', n: 'Dusk', c1: '#8a5bc7', c2: '#f1dcff', c3: '#2a1840', cost: { gems: 60 } }, { id: 'witchy', n: 'Witchy', c1: '#4b3170', c2: '#dccbff', c3: '#160c26', hat: '#24152f', hatBand: '#8dff7a', season: 'halloween' }],
   mo:    [{ id: 'base', n: 'Classic', c1: '#8a6a4c', c2: '#efd9c0', c3: '#2a2018' }, { id: 'sea', n: 'Sea Glass', c1: '#4aa59a', c2: '#d8fff8', c3: '#11302c', cost: { coins: 600 } }, { id: 'brass', n: 'Brass', c1: '#c79a3c', c2: '#fff0c8', c3: '#3a2a10', cost: { gems: 60 } }],
 };
 const TOWER_SKINS = [
@@ -281,12 +316,16 @@ const TOWER_SKINS = [
   { id: 'festival', n: 'Festival Lantern', a: '#ffe7b8', b: '#e0563a', roof: '#c22f4a', glow: '#ff9d5c', pass: true },
   { id: 'golden', n: 'Golden Beacon', a: '#fff1c4', b: '#e2a92a', roof: '#8a5a12', glow: '#ffe27a', gold: true, pass: 'gold' },
   { id: 'aurora', n: 'Aurora Beacon', a: '#e0f7ff', b: '#7af0c8', roof: '#3b2c7a', glow: '#9dffd9', aurora: true, iap: 'aurora' },
+  { id: 'pumpkin', n: 'Pumpkin Lantern', a: '#ffa04a', b: '#6a3596', roof: '#2b1840', glow: '#b8ff7a', jack: true, season: 'halloween' },
+  { id: 'frost', n: 'Frosted Lights', a: '#f2f9ff', b: '#9fd2ff', roof: '#2c4d7a', glow: '#fff1b8', fairy: true, snowcap: true, season: 'christmas' },
 ];
 // bolt trails (cosmetic only)
 const TRAILS = [
   { id: 'classic', n: 'Lantern Glow', col: '#ffd27a' },
   { id: 'ember', n: 'Ember Sparks', col: '#ff8a4d', spark: '#ffcf7a', cost: { coins: 900 } },
   { id: 'starlight', n: 'Starlight', col: '#bfe3ff', spark: '#ffffff', star: true, pass: 'gold' },
+  { id: 'spooky', n: 'Ghostly Wisps', col: '#b48cff', spark: '#a6ffb4', iap: 'season_halloween' },
+  { id: 'candycane', n: 'Candy Cane', col: '#ff5a6e', spark: '#ffffff', star: true, iap: 'season_christmas' },
 ];
 // enemies: hp, speed, radius, damage-to-tower, coins
 const ETYPES = {
@@ -406,13 +445,13 @@ const CFG = (() => { const c = window.BB_CONFIG || {}; return {
   revenueCatIosKey: c.revenueCatIosKey || '',
   vipEntitlement: c.vipEntitlement || 'vip',
   iapIds: c.iapIds || {},
-  ads: Object.assign({ enabled: true, testMode: true, rewardedIos: 'ca-app-pub-3940256099942544/1712485313', att: true }, c.ads || {}),
+  ads: Object.assign({ enabled: true, testMode: true, rewardedIos: 'ca-app-pub-3940256099942544/1712485313', att: false, npa: true }, c.ads || {}),
 }; })();
 // In-app purchase catalogue. IDs must match App Store Connect + RevenueCat (override in app-config.js / iap-products.json).
 // p = UK fallback label only; the real localised price comes from StoreKit at runtime.
 const IAP = {
   starter:  { id: 'bb_starter_pack', kind: 'nonconsumable', tab: 'offers', ic: '🎁', n: 'Starter Pack', d: '1,500 coins, 100 gems & Arctic Pip skin. One per player.', p: '£2.99' },
-  noads:    { id: 'bb_remove_ads', kind: 'nonconsumable', tab: 'offers', ic: '⚡', n: 'Ad-Free Rewards', d: 'Never watch an ad: revives and double-coin rewards are instant, forever.', p: '£3.99' },
+  noads:    { id: 'bb_remove_ads', kind: 'nonconsumable', tab: 'offers', ic: '⚡', n: 'Ad-Free Rewards', d: 'Skip the videos: your once-per-run revive and the daily 40 free coins are instant, no ad needed. Forever.', p: '£3.99' },
   mo:       { id: 'bb_mo_bundle', kind: 'nonconsumable', tab: 'offers', ic: '🦦', n: 'Mo Hero Bundle', d: 'Unlock Mo + Brass skin + 50 gems.', p: '£3.99' },
   gems80:   { id: 'bb_gems_80', kind: 'consumable', gems: 80, tab: 'offers', ic: '💎', n: 'Pouch of Gems', d: '80 gems', p: '£0.99' },
   gems500:  { id: 'bb_gems_500', kind: 'consumable', gems: 500, tab: 'offers', ic: '💎', n: 'Bag of Gems', d: '500 gems (+25%)', p: '£4.99' },
@@ -420,7 +459,9 @@ const IAP = {
   gems2400: { id: 'bb_gems_2400', kind: 'consumable', gems: 2400, tab: 'offers', ic: '💎', n: 'Vault of Gems', d: '2,400 gems (+50%)', p: '£19.99' },
   aurora:   { id: 'bb_skin_aurora_beacon', kind: 'nonconsumable', tab: 'offers', ic: '🌌', n: 'Aurora Beacon (skin)', d: 'Animated aurora tower skin. Cosmetic only.', p: '£1.99' },
   pass:     { id: 'bb_pass_s1', kind: 'nonconsumable', tab: 'club', ic: '🎟️', n: 'Beacon Pass: Gold (Season 1)', d: 'Unlock the gold reward track: Neon Pip, Starlight trail, Aurora Bruno, Golden Beacon & more.', p: '£4.99' },
-  club:     { id: 'bb_club_monthly', kind: 'subscription', tab: 'club', ic: '👑', n: "Keeper's Club (VIP)", d: 'Ad-free rewards, +50% coins in normal runs and the Aurora Beacon skin while subscribed. Renews monthly; cancel anytime.', p: '£4.99/month' },
+  season_halloween: { id: 'bb_season_halloween', kind: 'nonconsumable', tab: 'season', season: 'halloween', ic: '🎃', n: 'Spooky Bundle', d: '300 gems (once) + the Ghostly Wisps bolt trail, yours forever. Only sold during Spooky Season.', p: '£2.99' },
+  season_christmas: { id: 'bb_season_christmas', kind: 'nonconsumable', tab: 'season', season: 'christmas', ic: '🎁', n: 'Winter Bundle', d: '300 gems (once) + the Candy Cane bolt trail, yours forever. Only sold during Winter Lights.', p: '£2.99' },
+  club:     { id: 'bb_club_monthly', kind: 'subscription', tab: 'club', ic: '👑', n: "Keeper's Club (VIP)", d: 'Ad-free rewards (instant revive + daily coins), +50% coins in normal runs and the Aurora Beacon skin while subscribed. Renews monthly; cancel anytime.', p: '£4.99/month' },
 };
 for (const k in CFG.iapIds) if (IAP[k]) IAP[k].id = CFG.iapIds[k];
 if (window.BB_CONFIG && CFG.ads.enabled === false) { // ad-free build: nothing to remove, so don't sell Ad-Free Rewards (App Review 3.1.1 / 2.3.1)
@@ -432,13 +473,30 @@ const DEF = () => ({ v: 1, coins: 0, gems: 20, meta: {}, heroes: { pip: true }, 
   best: 0, runs: 0, wins: 0, kills: 0, bossKills: 0, totalCoins: 0, legendPicks: 0, maxWeapons: 1, cleanWave: 0, metaBought: 0, skinCount: 0,
   ach: [], achClaimed: [], streak: 0, bestStreak: 0, lastDaily: '', dailyRewarded: '', dailyBest: {}, passXp: 0, passClaimed: [],
   boosts: { reroll: 0, head: 0 }, music: true, sfx: true, haptics: true, trail: 'classic', ownedTrails: { classic: true }, passGold: false, passGoldClaimed: [],
-  iap: {}, noAds: false, vip: false, starterGranted: false, moGranted: false, tutDone: false, introSeen: false });
+  iap: {}, noAds: false, vip: false, starterGranted: false, moGranted: false, seasonal: true, ev: {}, seasonGems: {}, adCoinsDay: '', tutDone: false, introSeen: false });
 let S;
 function load() { try { S = Object.assign(DEF(), JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) { S = DEF(); } S.boosts = Object.assign({ reroll: 0, head: 0 }, S.boosts);
   if (S.muted === true) { S.music = false; S.sfx = false; } delete S.muted; // v1.0 preview save had one mute switch
+  if (typeof S.seasonal !== 'boolean') S.seasonal = true; if (!S.ev || typeof S.ev !== 'object') S.ev = {}; if (!S.seasonGems || typeof S.seasonGems !== 'object') S.seasonGems = {}; S.v = Math.max(2, S.v || 1); // v2: seasons
+  if (typeof S.adCoinsDay !== 'string') S.adCoinsDay = ''; S.v = Math.max(3, S.v); // v3: daily ad coins
   if (!TRAILS.some(x => x.id === S.trail)) S.trail = 'classic'; if (!TOWER_SKINS.some(x => x.id === S.towerSkin)) S.towerSkin = 'classic'; }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* storage full / private mode */ } }
 load();
+// ================= SEASONS (automatic by device date) =================
+const SEASONS = {
+  halloween: { n: 'Spooky Season', ic: '🎃', from: [10, 17], to: [11, 2], end: '2 November', tok: 'Candy', tokIc: '🍬', l2: '🎃 BAY 🦇', tag: 'Spooky Season · catch 🍬 candy',
+    rewards: [{ at: 25, k: 'gems', v: 25, t: '25 gems' }, { at: 60, k: 'skin', v: 'pumpkin', t: 'Pumpkin Lantern beacon' }, { at: 120, k: 'hskin', v: 'nova:witchy', t: 'Witchy Nova skin' }] },
+  christmas: { n: 'Winter Lights', ic: '🎄', from: [12, 1], to: [1, 5], end: '5 January', tok: 'Snowflakes', tokIc: '❄️', l2: '❄️ BAY 🎄', tag: 'Winter Lights · catch ❄️ snowflakes',
+    rewards: [{ at: 25, k: 'gems', v: 25, t: '25 gems' }, { at: 60, k: 'skin', v: 'frost', t: 'Frosted Lights beacon' }, { at: 120, k: 'hskin', v: 'bruno:santa', t: 'Santa Bruno skin' }] },
+};
+function seasonFor(d) { const v = (d.getMonth() + 1) * 100 + d.getDate();
+  for (const id in SEASONS) { const S2 = SEASONS[id], a = S2.from[0] * 100 + S2.from[1], b = S2.to[0] * 100 + S2.to[1]; if (a <= b ? (v >= a && v <= b) : (v >= a || v <= b)) return id; } return null; }
+const seasonOverride = (() => { try { const q = (new URLSearchParams(location.search).get('season') || '').toLowerCase(); return q === 'none' || SEASONS[q] ? q : null; } catch (e) { return null; } })(); // dev/test only: ?season=christmas|halloween|none
+let SEASON = null;
+function computeSeason() { SEASON = seasonOverride ? (seasonOverride === 'none' ? null : seasonOverride) : (S.seasonal ? seasonFor(new Date()) : null); return SEASON; }
+computeSeason();
+function seasonKey() { const d = new Date(); let y = d.getFullYear(); if (SEASON === 'christmas' && d.getMonth() === 0) y--; return SEASON + '-' + y; } // Jan 1-5 counts as the previous December's event
+function seasonEv() { const k = seasonKey(); return (S.ev[k] = S.ev[k] || { tok: 0, got: [] }); }
 const mlv = id => S.meta[id] || 0;
 
 // ================= AUDIO =================
@@ -476,7 +534,19 @@ const Music = (() => {
     if (song.bass && i % 2 === 0) note(ch[0] - 12, t, e * 1.7, 'triangle', .085, .01);
     if (song.drums) { if (i === 0 || i === 4 || (song.pulse && i === 6)) kick(t, .16); if (i % 2 === 1) hat(t, .022); if (i === 4) hat(t, .045); }
     if (song.pulse && i % 4 === 2) note(ch[2] + 24, t, e * .5, 'square', .01);
+    if (SEASON === 'christmas') { // sleigh bells + music-box sparkle
+      if (i % 2 === 1 || (song.drums && i % 4 === 2)) bell(t, song.drums ? .03 : .022);
+      if (i % 4 === 0) note(ch[song.arp[(i + 2) % 8]] + 24, t, e * 2.5, 'sine', .022, .005);
+    } else if (SEASON === 'halloween') { // soft spooky organ + a wobbly "ooo" glide (cute, not scary)
+      if (i === 0) for (const m of ch) { note(m - 12, t, e * 7.5, 'square', .008, .08); note(m, t, e * 7.5, 'sawtooth', .006, .1); }
+      if (!song.drums && bar % 2 === 0 && i === 4) ooo(ch[2] + 12, t, e * 3.5);
+      if (song.drums && i === 6) note(ch[0] + 24, t, e * .8, 'triangle', .016);
+    }
   }
+  function bell(t, v) { if (!nbuf) hat(t, 0); const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); f.type = 'bandpass'; f.frequency.value = 6800 + Math.random() * 1500; f.Q.value = 6; g.gain.value = v * 3; s.buffer = nbuf; s.connect(f); f.connect(g); g.connect(musGain); s.start(t); }
+  function ooo(m, t, d) { const o = AC.createOscillator(), l = AC.createOscillator(), lg = AC.createGain(), g = AC.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(mtof(m), t); o.frequency.linearRampToValueAtTime(mtof(m - 3), t + d);
+    l.frequency.value = 5.5; lg.gain.value = 9; l.connect(lg); lg.connect(o.frequency); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.03, t + d * .3); g.gain.linearRampToValueAtTime(0, t + d);
+    o.connect(g); g.connect(musGain); o.start(t); l.start(t); o.stop(t + d + .05); l.stop(t + d + .05); }
   function tick() { if (!AC || AC.state !== 'running') return; const song = SONGS[mood], e = 60 / song.bpm / 2;
     if (nextT < AC.currentTime) nextT = AC.currentTime + .05;
     while (nextT < AC.currentTime + .3) { if (S.music && !simMode) play(song, stepN, nextT, e); nextT += e; stepN++; } }
@@ -713,8 +783,11 @@ function kill(e) {
   if (e.type === 'split') { for (let i = 0; i < 2; i++) { const m = spawnEnemy('mini', e.x + (i ? 8 : -8), e.y + (i ? -4 : 4), false); m.kbx = (i ? 1 : -1) * 60; } }
   if (e.type === 'boss3') { for (let i = 0; i < 2; i++) spawnEnemy('prince', e.x + (i ? 26 : -26), e.y, false); }
   if (e.boss) { R.bossKills++; R.shake = 12; if (R.boss === e) R.boss = null; addRing(e.x, e.y, 10, 120, .6, '#ffe7a3', 6); addParts(e.x, e.y, 40, ['#ffe28a', '#c9b6ff', '#fff'], 220, 5, 1, 'star'); if (!simMode) { sfx.boom(); buzz(60); } }
-  addParts(e.x, e.y, e.r > 15 ? 14 : 8, ['#ffe9a8', '#cdbcff', '#ffffff'], 110, e.r > 15 ? 4 : 3, .5, 'star');
+  if (SEASON === 'christmas') addParts(e.x, e.y, e.r > 15 ? 12 : 7, ['#ffffff', '#d6efff', '#bfe3ff'], 100, e.r > 15 ? 4.2 : 3.4, .6, 'flake');
+  else if (SEASON === 'halloween') addParts(e.x, e.y, e.r > 15 ? 12 : 7, ['#ff9a3c', '#b98cff', '#8dff7a', '#ff7ac0'], 110, e.r > 15 ? 3.6 : 3, .55, 'candy');
+  else addParts(e.x, e.y, e.r > 15 ? 14 : 8, ['#ffe9a8', '#cdbcff', '#ffffff'], 110, e.r > 15 ? 4 : 3, .5, 'star');
   addRing(e.x, e.y, e.r * .5, e.r * 1.6, .25, 'rgba(255,240,200,.8)', 2);
+  if (SEASON && !R.sim && e.type !== 'mini' && (e.boss || Math.random() < .07)) { const n2 = e.boss ? 5 : 1; for (let i = 0; i < n2; i++) { const a = Math.random() * 6.283, sp = 40 + Math.random() * 60; R.pickups.push({ x: e.x, y: e.y, k: 'tok', v: 1, t: 0, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, vac: false }); } }
   if (!simMode) sfx.poof();
 }
 function dropPick(x, y, k, v) { const a = R.frng() * 6.283, s = 40 + R.frng() * 60; R.pickups.push({ x, y, k, v, t: 0, vx: Math.cos(a) * s, vy: Math.sin(a) * s, vac: false }); }
@@ -722,6 +795,7 @@ function collect(p) {
   p.dead = true;
   if (p.k === 'coin') { R.coins += p.v * R.P.gold; if (!simMode) sfx.coin(); }
   else if (p.k === 'gem') { R.gems += p.v; if (!simMode) sfx.coin(); }
+  else if (p.k === 'tok') { R.tokens = (R.tokens || 0) + p.v; addText(p.x, p.y - 8, '+1 ' + SEASONS[SEASON || 'halloween'].tokIc, '#ffd08a', 12); if (!simMode) { sfx.coin(); tone(1760, .08, 'sine', .04, 0, .05); } }
   else if (p.k === 'heart') { R.tower.hp = Math.min(R.tower.max, R.tower.hp + 12); addText(TX, TY - 50, '+12', '#ff9fae', 15); if (!simMode) sfx.heart(); }
 }
 function towerHit(dmg) {
@@ -899,7 +973,7 @@ function updatePickups(dt) {
     const dx = h.x - p.x, dy = h.y - p.y, d = Math.hypot(dx, dy) || 1;
     if (p.vac || d < mg * 2) { const sp = p.vac ? 520 : 260; p.x += dx / d * sp * dt; p.y += dy / d * sp * dt; }
     if (d < 16 || (p.vac && d < 30)) collect(p);
-    else if (!p.vac && p.t > (p.k === 'heart' ? 7 : p.k === 'gem' ? 1e9 : 8)) p.dead = true;
+    else if (!p.vac && p.t > (p.k === 'heart' ? 7 : (p.k === 'gem' || p.k === 'tok') ? 1e9 : 8)) p.dead = true;
   }
   R.pickups = R.pickups.filter(p => !p.dead);
 }
@@ -970,23 +1044,43 @@ function resize() {
   SC = Math.min(CW / WW, availH / WH); OX = (CW - WW * SC) / 2; OY = si.t + (availH - WH * SC) / 2; buildBg();
 }
 function islandPath(g, r0) { g.beginPath(); for (let i = 0; i <= 72; i++) { const a = i / 72 * 6.283, r = r0 + 9 * Math.sin(3 * a + .5) + 6 * Math.sin(5 * a + 1.3) + 3 * Math.sin(9 * a); const x = TX + Math.cos(a) * r * 1.0, y = TY + Math.sin(a) * r * 1.12; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); }
+function seasonPal() {
+  if (SEASON === 'halloween') return { sea: ['#1b1233', '#2a1a4a', '#120b22'], shallow: ['rgba(140,90,200,.12)', 'rgba(160,110,210,.12)'], sand: '#c9a06a', grass: ['#6f7d48', '#46562f'], tuft: 'rgba(30,40,20,.5)', flowers: ['#ff9a3c', '#b98cff', '#ffd27a', '#8dff7a'], moon: true, pumpkins: true };
+  if (SEASON === 'christmas') return { sea: ['#0f2540', '#173d5e', '#0b1a2e'], shallow: ['rgba(170,220,255,.12)', 'rgba(200,235,255,.14)'], sand: '#f4f8fd', grass: ['#e9f1fa', '#c8d8ea'], tuft: 'rgba(120,150,180,.35)', flowers: ['#e23b3b', '#ffffff', '#e23b3b', '#ffd84a'], trees: true };
+  return { sea: ['#0f2236', '#133149', '#0c1b2e'], shallow: ['rgba(70,170,190,.10)', 'rgba(90,190,200,.12)'], sand: '#d9c38f', grass: ['#6f9f62', '#4d7d4f'], tuft: 'rgba(40,80,45,.5)', flowers: ['#f6e7b0', '#f2a7b8', '#cfe0ff', '#fff'] };
+}
+function seasonOverlay(g, t) { // drawn over the scene (world coords)
+  if (SEASON === 'christmas') { g.fillStyle = '#fff'; for (let i = 0; i < 70; i++) { const sp = 18 + (i % 7) * 5, y = ((i * 97.3 + t * sp) % (WH + 20)) - 10, x = ((i * 53.7 + Math.sin(t * .6 + i) * 14) % WW + WW) % WW, sz = .9 + (i % 4) * .45;
+      g.globalAlpha = .55 + (i % 3) * .15; g.beginPath(); g.arc(x, y, sz, 0, 6.283); g.fill(); } g.globalAlpha = 1; }
+  else if (SEASON === 'halloween') {
+    g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 5; i++) { const x = ((i * 90 + t * (6 + i * 2)) % (WW + 160)) - 80, y = 420 + i * 45 + Math.sin(t * .4 + i) * 10; g.globalAlpha = .07; g.drawImage(glow('rgba(190,170,240,1)'), x - 90, y - 30, 180, 60); } g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    for (let i = 0; i < 3; i++) { const x = ((i * 140 + t * (22 + i * 6)) % (WW + 60)) - 30, y = 70 + i * 34 + Math.sin(t * 2 + i * 2) * 10, f = Math.sin(t * 14 + i * 3);
+      g.fillStyle = '#2a1840'; g.beginPath(); g.ellipse(x, y, 3.2, 2.6, 0, 0, 6.283); g.fill(); g.beginPath(); g.moveTo(x - 2, y); g.quadraticCurveTo(x - 8, y - 6 * f, x - 12, y + 1); g.quadraticCurveTo(x - 7, y - 1, x - 2, y + 1.5); g.moveTo(x + 2, y); g.quadraticCurveTo(x + 8, y - 6 * f, x + 12, y + 1); g.quadraticCurveTo(x + 7, y - 1, x + 2, y + 1.5); g.fill();
+      g.fillStyle = '#ffd27a'; g.fillRect(x - 1.6, y - .8, .9, .9); g.fillRect(x + .7, y - .8, .9, .9); } }
+}
 function buildBg() {
   bgC = document.createElement('canvas'); bgC.width = cv.width; bgC.height = cv.height; const g = bgC.getContext('2d');
-  const wg = g.createLinearGradient(0, 0, 0, bgC.height); wg.addColorStop(0, '#0f2236'); wg.addColorStop(.5, '#133149'); wg.addColorStop(1, '#0c1b2e'); g.fillStyle = wg; g.fillRect(0, 0, bgC.width, bgC.height);
+  const PAL = seasonPal();
+  const wg = g.createLinearGradient(0, 0, 0, bgC.height); wg.addColorStop(0, PAL.sea[0]); wg.addColorStop(.5, PAL.sea[1]); wg.addColorStop(1, PAL.sea[2]); g.fillStyle = wg; g.fillRect(0, 0, bgC.width, bgC.height);
   g.setTransform(dpr * SC, 0, 0, dpr * SC, dpr * OX, dpr * OY);
   const rnd = mulberry32(7);
   // distant water texture
   g.strokeStyle = 'rgba(160,210,255,.05)'; g.lineWidth = 1.2;
   for (let i = 0; i < 70; i++) { const x = rnd() * WW, y = rnd() * WH, w = 8 + rnd() * 22; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + w / 2, y - 3, x + w, y); g.stroke(); }
   // shallow water halo
-  islandPath(g, 160); g.fillStyle = 'rgba(70,170,190,.10)'; g.fill(); islandPath(g, 148); g.fillStyle = 'rgba(90,190,200,.12)'; g.fill();
+  if (PAL.moon) { const mx = 300, my = 62; g.globalCompositeOperation = 'lighter'; g.globalAlpha = .55; g.drawImage(glow('rgba(255,170,90,1)'), mx - 70, my - 70, 140, 140); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    g.fillStyle = '#ffb35a'; g.beginPath(); g.arc(mx, my, 22, 0, 6.283); g.fill(); g.fillStyle = 'rgba(200,110,40,.35)'; for (const [cx, cy, cr] of [[-7, -5, 5], [6, 4, 4], [-3, 9, 3]]) { g.beginPath(); g.arc(mx + cx, my + cy, cr, 0, 6.283); g.fill(); }
+    g.fillStyle = 'rgba(90,50,140,.55)'; g.beginPath(); g.ellipse(mx - 6, my + 14, 30, 5, 0, 0, 6.283); g.fill(); }
+  islandPath(g, 160); g.fillStyle = PAL.shallow[0]; g.fill(); islandPath(g, 148); g.fillStyle = PAL.shallow[1]; g.fill();
   // sand + grass
-  islandPath(g, 138); g.fillStyle = '#d9c38f'; g.fill();
-  islandPath(g, 128); const gg = g.createRadialGradient(TX, TY - 20, 10, TX, TY, 150); gg.addColorStop(0, '#6f9f62'); gg.addColorStop(1, '#4d7d4f'); g.fillStyle = gg; g.fill();
+  islandPath(g, 138); g.fillStyle = PAL.sand; g.fill();
+  islandPath(g, 128); const gg = g.createRadialGradient(TX, TY - 20, 10, TX, TY, 150); gg.addColorStop(0, PAL.grass[0]); gg.addColorStop(1, PAL.grass[1]); g.fillStyle = gg; g.fill();
   // grass tufts / flowers / rocks
   for (let i = 0; i < 90; i++) { const a = rnd() * 6.283, r = Math.sqrt(rnd()) * 118, x = TX + Math.cos(a) * r, y = TY + Math.sin(a) * r * 1.12; if (Math.hypot(x - TX, y - TY) < 36) continue;
-    const k = rnd(); if (k < .6) { g.strokeStyle = 'rgba(40,80,45,.5)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - 2, y + 2); g.lineTo(x - 3, y - 2); g.moveTo(x, y + 2); g.lineTo(x, y - 3); g.moveTo(x + 2, y + 2); g.lineTo(x + 3, y - 2); g.stroke(); }
-    else if (k < .82) { g.fillStyle = ['#f6e7b0', '#f2a7b8', '#cfe0ff', '#fff'][Math.floor(rnd() * 4)]; g.beginPath(); g.arc(x, y, 1.7, 0, 6.283); g.fill(); }
+    const k = rnd(); if (PAL.trees && k < .22) { g.fillStyle = '#2f6b45'; g.beginPath(); g.moveTo(x, y - 9); g.lineTo(x + 5, y + 2); g.lineTo(x - 5, y + 2); g.closePath(); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(x, y - 9); g.lineTo(x + 2.2, y - 4.5); g.lineTo(x - 2.2, y - 4.5); g.closePath(); g.fill(); g.fillStyle = '#6b4a2c'; g.fillRect(x - 1, y + 2, 2, 2.5); continue; }
+    if (PAL.pumpkins && k < .08) { g.fillStyle = '#f08a2c'; g.beginPath(); g.ellipse(x, y, 4.5, 3.4, 0, 0, 6.283); g.fill(); g.fillStyle = '#5a8a2a'; g.fillRect(x - .6, y - 5, 1.2, 2); continue; }
+    if (k < .6) { g.strokeStyle = PAL.tuft; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - 2, y + 2); g.lineTo(x - 3, y - 2); g.moveTo(x, y + 2); g.lineTo(x, y - 3); g.moveTo(x + 2, y + 2); g.lineTo(x + 3, y - 2); g.stroke(); }
+    else if (k < .82) { g.fillStyle = PAL.flowers[Math.floor(rnd() * 4)]; g.beginPath(); g.arc(x, y, 1.7, 0, 6.283); g.fill(); }
     else { g.fillStyle = '#8b8f94'; g.beginPath(); g.ellipse(x, y, 4 + rnd() * 3, 3 + rnd() * 2, 0, 0, 6.283); g.fill(); g.fillStyle = 'rgba(255,255,255,.18)'; g.beginPath(); g.ellipse(x - 1, y - 1, 2, 1.2, 0, 0, 6.283); g.fill(); } }
   // stone path ring
   for (let i = 0; i < 18; i++) { const a = i / 18 * 6.283, x = TX + Math.cos(a) * 46, y = TY + Math.sin(a) * 50; g.fillStyle = 'rgba(220,214,196,.55)'; g.beginPath(); g.ellipse(x, y, 6, 4, a, 0, 6.283); g.fill(); }
@@ -1029,7 +1123,8 @@ function drawHero(g, id, sk, x, y, s, t, face = 1, walk = 0, aura = 0) {
   // accessories
   if (sk.neon) { g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = sk.neon; g.globalAlpha = .45 + .25 * Math.sin(t * 6); g.lineWidth = 1.2; g.beginPath(); g.ellipse(0, 0, 13.5, 14, 0, 0, 6.283); g.stroke(); g.restore(); }
   if (id === 'pip') { g.fillStyle = sk.neon ? '#ff4fd8' : '#3fb7a8'; g.beginPath(); g.ellipse(0, 8.5, 9, 2.6, 0, 0, 6.283); g.fill(); g.beginPath(); g.moveTo(-6, 9); g.lineTo(-11, 15); g.lineTo(-4, 11); g.fill(); }
-  if (id === 'nova') { g.fillStyle = '#2b2f63'; g.beginPath(); g.moveTo(-8, -9); g.lineTo(9, -9); g.lineTo(3, -24); g.closePath(); g.fill(); g.fillStyle = '#ffe07a'; g.beginPath(); g.arc(3, -14, 1.6, 0, 6.283); g.fill(); }
+  if (id === 'nova') { g.fillStyle = sk.hat || '#2b2f63'; g.beginPath(); g.moveTo(-8, -9); g.lineTo(9, -9); g.lineTo(3, -24); g.closePath(); g.fill(); g.fillStyle = sk.hatBand || '#ffe07a'; if (sk.hatBand) { g.fillRect(-6, -11.5, 13, 2.2); } g.beginPath(); g.arc(3, -14, 1.6, 0, 6.283); g.fill(); }
+  if (sk.santaHat) santaHat(g, 0, -10, 15, -.15);
   if (id === 'mo') { g.fillStyle = '#c99a3c'; g.fillRect(-7, -9.5, 15, 3); g.fillStyle = '#bff3ff'; g.beginPath(); g.arc(-1, -8, 2.4, 0, 6.283); g.arc(6, -8, 2.4, 0, 6.283); g.fill(); }
   if (sk.aurora) { g.fillStyle = '#fff'; for (let i = 0; i < 3; i++) { const a = t * 2 + i * 2.1; g.globalAlpha = .5 + .5 * Math.sin(t * 5 + i); star4(g, Math.cos(a) * 15, -6 + Math.sin(a) * 9, 2.2); } g.globalAlpha = 1; }
   if (id === 'bruno') { g.save(); g.rotate(aura > 0 ? -t * 30 : .6); g.fillStyle = '#7a5a3c'; g.fillRect(8, -1.5, 14, 3); g.fillStyle = '#9aa3b5'; g.fillRect(19, -5, 7, 10); g.restore(); }
@@ -1053,6 +1148,13 @@ function drawTower(g, sk, x, y, s, t, hitT = 0, hpFrac = 1) {
   g.fillStyle = sk.glow; g.fillRect(-7, -47, 14, 11); g.fillStyle = 'rgba(255,255,255,.7)'; g.fillRect(-3, -46, 3, 9);
   g.strokeStyle = sk.roof; g.lineWidth = 1.5; g.beginPath(); g.moveTo(-7, -47); g.lineTo(-7, -36); g.moveTo(0, -47); g.lineTo(0, -36); g.moveTo(7, -47); g.lineTo(7, -36); g.stroke();
   g.fillStyle = sk.roof; g.beginPath(); g.moveTo(-10, -47); g.lineTo(10, -47); g.lineTo(0, -59); g.closePath(); g.fill(); g.beginPath(); g.arc(0, -60, 2, 0, 6.283); g.fill();
+  const deco = g === ctx && SEASON;
+  if (sk.jack) { g.fillStyle = '#3a1a08'; for (const sx of [-1, 1]) { g.beginPath(); g.arc(sx * 4, -18, 1.9, 0, 6.283); g.fill(); } g.lineWidth = 1.4; g.strokeStyle = '#3a1a08'; g.beginPath(); g.arc(0, -14.5, 4, .25, Math.PI - .25); g.stroke(); }
+  if (sk.snowcap || (deco && SEASON === 'christmas')) { g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(0, -36.5, 13.5, 2.6, 0, 0, 6.283); g.fill(); g.beginPath(); g.moveTo(-10.5, -47); g.quadraticCurveTo(0, -60, 10.5, -47); g.quadraticCurveTo(0, -50, -10.5, -47); g.fill(); g.beginPath(); g.ellipse(0, 7, 24, 7, 0, 0, Math.PI, true); g.fill(); }
+  if (sk.fairy || (deco && SEASON === 'christmas')) { const cols = ['#ff5a5a', '#ffd84a', '#5ad1ff', '#7dff7a', '#ff8ae0']; for (let i = 0; i < 14; i++) { const u = i / 13, yy = 4 - u * 36, w = 12.5 - u * 4, xx = Math.sin(u * 9.4) * w;
+      const on = (Math.floor(t * 3) + i) % 3 !== 0; g.fillStyle = cols[i % 5]; g.globalAlpha = on ? 1 : .35; g.beginPath(); g.arc(xx, yy, 1.5, 0, 6.283); g.fill(); if (on) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = .35; g.beginPath(); g.arc(xx, yy, 3.2, 0, 6.283); g.fill(); g.globalCompositeOperation = 'source-over'; } } g.globalAlpha = 1; }
+  if (deco && SEASON === 'halloween') { for (const [px, ps] of [[-19, 1], [18, .8], [-11, .6]]) { g.save(); g.translate(px, 9); g.scale(ps, ps); g.fillStyle = '#f08a2c'; g.beginPath(); g.ellipse(0, 0, 6, 4.6, 0, 0, 6.283); g.fill(); g.strokeStyle = 'rgba(150,60,10,.6)'; g.lineWidth = .8; g.beginPath(); g.ellipse(0, 0, 2.4, 4.6, 0, 0, 6.283); g.stroke();
+      g.fillStyle = '#5a8a2a'; g.fillRect(-.8, -6.5, 1.6, 2.5); g.fillStyle = '#ffe07a'; g.beginPath(); g.arc(-2, -.8, .9, 0, 6.283); g.arc(2, -.8, .9, 0, 6.283); g.fill(); g.restore(); } }
   if (sk.gold) { g.strokeStyle = '#fff3b0'; g.lineWidth = 1.2; g.stroke(body); g.fillStyle = '#ffd34d'; g.beginPath(); g.moveTo(-4, -60); g.lineTo(0, -68); g.lineTo(4, -60); g.closePath(); g.fill();
     g.fillStyle = '#fffbe0'; for (let i = 0; i < 4; i++) { const ph = t * 1.7 + i * 1.57, a = Math.max(0, Math.sin(ph)); if (a < .05) continue; g.globalAlpha = a; star4(g, Math.cos(i * 2.4) * 14, -10 - ((i * 13) % 40), 1.5 + 2 * a); } g.globalAlpha = 1; }
   if (sk.aurora) { g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 3; i++) { const yy = -50 - i * 5 + Math.sin(t * 2 + i) * 2; g.strokeStyle = `hsla(${(t * 40 + i * 50) % 360},90%,65%,.45)`; g.lineWidth = 3; g.beginPath(); g.moveTo(-22, yy + Math.sin(t * 3 + i) * 3); g.quadraticCurveTo(0, yy - 6, 22, yy + Math.cos(t * 3 + i) * 3); g.stroke(); } g.globalCompositeOperation = 'source-over'; }
@@ -1064,16 +1166,37 @@ function gloomPath(type, r, ang) { const body = new Path2D();
   if (type === 'fast') { const ca = Math.cos(ang), sa = Math.sin(ang); body.moveTo(ca * r * 1.2, sa * r * 1.2); body.arc(0, 0, r, ang + 1.2, ang - 1.2 + 6.283); body.closePath(); }
   else if (type === 'boss2') { body.moveTo(0, -r); body.lineTo(r * 1.1, 0); body.lineTo(0, r * .9); body.lineTo(-r * 1.1, 0); body.closePath(); }
   else { body.ellipse(0, 0, r, r * .95, 0, 0, 6.283); } return body; }
+const PUMPKIN_T = new Set(['grunt', 'split', 'tank', 'prince', 'boss1', 'boss3']), GHOST_T = new Set(['fast', 'flyer', 'shield', 'mini']);
+function ghostPath(r) { const p = new Path2D(); p.moveTo(-r, r * .55); p.lineTo(-r, -r * .1); p.arc(0, -r * .1, r, Math.PI, 0); p.lineTo(r, r * .55);
+  for (let i = 0; i < 4; i++) { const x0 = r - i * r / 2; p.quadraticCurveTo(x0 - r / 8, r * .95, x0 - r / 4, r * .7); p.quadraticCurveTo(x0 - r * 3 / 8, r * .45, x0 - r / 2, r * .55); } p.closePath(); return p; }
 function gloomBodyDraw(g, type, r, ang, t, flashA) {
+  const look = SEASON === 'halloween' ? (PUMPKIN_T.has(type) ? 'pumpkin' : GHOST_T.has(type) ? 'ghost' : null) : null;
+  if (look === 'ghost') { const gp = ghostPath(r); g.fillStyle = '#f3efff'; g.fill(gp); g.fillStyle = 'rgba(150,130,210,.25)'; g.beginPath(); g.ellipse(0, r * .55, r * .9, r * .3, 0, 0, 6.283); g.fill();
+    if (flashA) { g.globalAlpha = flashA * .6; g.fillStyle = '#fff6c8'; g.fill(gp); g.globalAlpha = 1; } g.lineWidth = 1.6; g.strokeStyle = '#6a5a9a'; g.stroke(gp);
+    g.fillStyle = 'rgba(255,140,190,.45)'; for (const sx of [-1, 1]) { g.beginPath(); g.ellipse(sx * r * .55, r * .15, r * .16, r * .1, 0, 0, 6.283); g.fill(); } return; }
   const T = ETYPES[type], body = gloomPath(type, r, ang);
   if (type === 'boss2') { g.strokeStyle = '#8fb4ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, r * .9); g.quadraticCurveTo(Math.sin(t * 6) * 10, r * 1.6, Math.sin(t * 4) * 6, r * 2.2); g.stroke(); }
-  g.fillStyle = T.col; g.fill(body); if (flashA) { g.globalAlpha = flashA; g.fillStyle = '#ffffff'; g.fill(body); g.globalAlpha = 1; }
+  g.fillStyle = look === 'pumpkin' ? '#f08a2c' : T.col; g.fill(body); if (flashA) { g.globalAlpha = flashA; g.fillStyle = '#ffffff'; g.fill(body); g.globalAlpha = 1; }
+  if (look === 'pumpkin') { g.save(); g.clip(body); g.strokeStyle = 'rgba(160,70,10,.55)'; g.lineWidth = Math.max(1.2, r * .09); for (const k of [-.55, 0, .55]) { g.beginPath(); g.ellipse(k * r, 0, r * .42, r * .98, 0, 0, 6.283); g.stroke(); } g.restore();
+    g.fillStyle = '#5a8a2a'; g.beginPath(); g.moveTo(-r * .1, -r * .85); g.lineTo(r * .12, -r * .85); g.lineTo(r * .2, -r * 1.25); g.lineTo(-r * .02, -r * 1.2); g.closePath(); g.fill();
+    g.fillStyle = '#8fd14f'; g.beginPath(); g.ellipse(r * .32, -r * 1.05, r * .22, r * .1, -.5, 0, 6.283); g.fill(); }
   g.save(); g.clip(body); g.fillStyle = 'rgba(255,255,255,.16)'; g.beginPath(); g.ellipse(-r * .3, -r * .45, r * .7, r * .45, -.4, 0, 6.283); g.fill(); g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(0, r * .75, r * 1.1, r * .5, 0, 0, 6.283); g.fill(); g.restore();
-  g.lineWidth = r > 20 ? 2.6 : 1.8; g.strokeStyle = '#1a1230'; g.stroke(body);
+  g.lineWidth = r > 20 ? 2.6 : 1.8; g.strokeStyle = look === 'pumpkin' ? '#6a3008' : '#1a1230'; g.stroke(body);
+  if (look) return;
   if (type === 'split') { g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(0, -r * .9); for (let i = 1; i <= 4; i++) g.lineTo((i % 2 ? 3 : -3), -r * .9 + i * r * .45); g.stroke(); }
   if (type === 'tank') { g.fillStyle = '#2a2050'; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * r * .35, -r * .8); g.lineTo(sx * r * .6, -r * 1.25); g.lineTo(sx * r * .75, -r * .65); g.fill(); } }
 }
 const gSpr = new Map(); let gSprK = 0;
+function santaHat(g, x, y, w, tilt) { g.save(); g.translate(x, y); g.rotate(tilt); g.fillStyle = '#e03a3a'; g.strokeStyle = '#7a1414'; g.lineWidth = Math.max(1, w * .07);
+  g.beginPath(); g.moveTo(-w * .5, 0); g.quadraticCurveTo(-w * .15, -w * .9, w * .45, -w * .75); g.quadraticCurveTo(w * .2, -w * .45, w * .5, 0); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#fff'; g.beginPath(); g.ellipse(0, 0, w * .58, w * .16, 0, 0, 6.283); g.fill(); g.beginPath(); g.arc(w * .47, -w * .75, w * .14, 0, 6.283); g.fill(); g.restore(); }
+function gloomHat(g, e, r) { if (SEASON !== 'christmas' || (e.boss && e.type !== 'boss2')) return; santaHat(g, r * .05, -r * .78, r * 1.25, -.12); }
+function flake(g, x, y, s, col) { g.strokeStyle = col; g.lineWidth = Math.max(.8, s * .28); g.beginPath(); for (let k = 0; k < 3; k++) { const a = k * 1.047; g.moveTo(x - Math.cos(a) * s, y - Math.sin(a) * s); g.lineTo(x + Math.cos(a) * s, y + Math.sin(a) * s); } g.stroke(); }
+function candy(g, x, y, s, col, rot) { g.save(); g.translate(x, y); g.rotate(rot); g.fillStyle = col; g.beginPath(); g.arc(0, 0, s, 0, 6.283); g.moveTo(s * .8, 0); g.lineTo(s * 1.9, -s * .7); g.lineTo(s * 1.9, s * .7); g.closePath(); g.moveTo(-s * .8, 0); g.lineTo(-s * 1.9, -s * .7); g.lineTo(-s * 1.9, s * .7); g.closePath(); g.fill(); g.restore(); }
+function drawToken(g, x, y, sc, t) { // seasonal event pickup
+  g.globalCompositeOperation = 'lighter'; g.globalAlpha = .45; g.drawImage(glow(SEASON === 'christmas' ? 'rgba(170,220,255,1)' : 'rgba(255,170,90,1)'), x - 13 * sc, y - 13 * sc, 26 * sc, 26 * sc); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  if (SEASON === 'christmas') { flake(g, x, y, 6 * sc, '#ffffff'); g.fillStyle = '#cfeaff'; g.beginPath(); g.arc(x, y, 1.6 * sc, 0, 6.283); g.fill(); }
+  else { candy(g, x, y, 3.6 * sc, '#ff8a2a', Math.sin(t * 3 + x) * .4); g.fillStyle = 'rgba(255,255,255,.7)'; g.beginPath(); g.arc(x - 1.2 * sc, y - 1.2 * sc, 1.1 * sc, 0, 6.283); g.fill(); } }
 function gloomDetails(g, e, r, ang, t, fl) { // wings (fl = flap), eyes, brows, crown, shield arc, in body-local coords
   const type = e.type;
   return { wings() { if (fl == null) return; g.fillStyle = 'rgba(190,175,255,.55)'; for (const sx of [-1, 1]) { g.save(); g.scale(sx, 1); g.rotate(-.3 + fl); g.beginPath(); g.ellipse(r * .9, -r * .2, r * .9, r * .5, -.2, 0, 6.283); g.fill(); g.restore(); } },
@@ -1087,10 +1210,10 @@ function gloomDetails(g, e, r, ang, t, fl) { // wings (fl = flap), eyes, brows, 
 const FLAPS = [-.5, -.17, .17, .5];
 function gloomSprite(e, ab, wf, sl, fla) {
   const k = SC * dpr; if (k !== gSprK) { gSpr.clear(); gSprK = k; }
-  const r = e.r, key = e.type + '|' + Math.round(r * 4) + '|' + ab + '|' + wf + '|' + sl + (fla ? 'f' : ''); let c = gSpr.get(key); if (c) return c;
-  const pad = Math.max(r * 1.3 + 3, r + 10) + (wf >= 0 ? r * .9 : 0), size = Math.ceil(pad * 2 * k); c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); g.setTransform(k, 0, 0, k, size / 2, size / 2);
+  const r = e.r, key = (SEASON || '') + e.type + '|' + Math.round(r * 4) + '|' + ab + '|' + wf + '|' + sl + (fla ? 'f' : ''); let c = gSpr.get(key); if (c) return c;
+  const pad = Math.max(r * 1.3 + 3, r + 10) + (wf >= 0 ? r * .9 : 0) + (SEASON === 'christmas' ? r * 1.1 : 0), size = Math.ceil(pad * 2 * k); c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d'); g.setTransform(k, 0, 0, k, size / 2, size / 2);
   const ang = ab / 16 * 6.283, D = gloomDetails(g, e, r, ang, 0, wf >= 0 ? FLAPS[wf] : null);
-  D.wings(); gloomBodyDraw(g, e.type, r, ang, 0, fla ? .6 : 0); D.face(); D.shield(sl);
+  D.wings(); gloomBodyDraw(g, e.type, r, ang, 0, fla ? .6 : 0); D.face(); gloomHat(g, e, r); D.shield(sl);
   c._pad = pad; gSpr.set(key, c); if (gSpr.size > 1500) gSpr.clear(); return c;
 }
 function drawGloom(g, e, t, noShadow) {
@@ -1105,7 +1228,7 @@ function drawGloom(g, e, t, noShadow) {
   } else {
     const D = gloomDetails(g, e, r, ang, t, fly ? Math.sin(t * 22 + e.wob) * .5 : null); D.wings(); g.scale(1 + sq, 1 - sq);
     if (e.type === 'boss2') { g.strokeStyle = '#8fb4ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, r * .9); g.quadraticCurveTo(Math.sin(t * 6) * 10, r * 1.6, Math.sin(t * 4) * 6, r * 2.2); g.stroke(); }
-    gloomBodyDraw(g, e.type, r, ang, t, e.flash > 0 ? (e.boss ? .35 : .6) : 0); D.face(); g.restore();
+    gloomBodyDraw(g, e.type, r, ang, t, e.flash > 0 ? (e.boss ? .35 : .6) : 0); D.face(); gloomHat(g, e, r); g.restore();
     if (e.shield > 0) { g.save(); g.translate(e.x, e.y - lift); D.shield(e.shield); g.restore(); }
   }
   if (e.shieldUp > 0) { g.strokeStyle = 'rgba(200,180,255,.8)'; g.lineWidth = 3; g.beginPath(); g.arc(e.x, e.y, r + 8, 0, 6.283); g.stroke(); g.fillStyle = 'rgba(200,180,255,.15)'; g.fill(); }
@@ -1130,9 +1253,10 @@ function drawScene(st, t, adj = 0) {
   // pools
   for (const p of st.pools) { g.fillStyle = `rgba(255,150,80,${.18 * Math.min(1, p.t)})`; g.beginPath(); g.ellipse(p.x, p.y, p.r, p.r * .8, 0, 0, 6.283); g.fill(); g.fillStyle = '#ffd27a'; for (let i = 0; i < 4; i++) { const a = Math.random() * 6.283, rr = Math.random() * p.r; star4(g, p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr * .8, 2); } }
   // pickups
-  for (const p of st.pickups) { const bob = Math.sin(t * 6 + p.x) * 1.5, blink = !p.vac && p.k !== 'gem' && p.t > (p.k === 'heart' ? 5 : 6) && Math.sin(t * 20) > 0; if (blink) continue;
+  for (const p of st.pickups) { const bob = Math.sin(t * 6 + p.x) * 1.5, blink = !p.vac && p.k !== 'gem' && p.k !== 'tok' && p.t > (p.k === 'heart' ? 5 : 6) && Math.sin(t * 20) > 0; if (blink) continue;
     if (p.k === 'coin') { g.fillStyle = '#d98a1c'; g.beginPath(); g.arc(p.x, p.y + bob, 4.2, 0, 6.283); g.fill(); g.fillStyle = '#ffc93d'; g.beginPath(); g.arc(p.x, p.y + bob - .6, 3.6, 0, 6.283); g.fill(); g.fillStyle = '#fff3b0'; g.beginPath(); g.arc(p.x - 1, p.y + bob - 1.6, 1.2, 0, 6.283); g.fill(); }
     else if (p.k === 'gem') { g.fillStyle = '#3fd0c9'; g.beginPath(); g.moveTo(p.x, p.y + bob - 6); g.lineTo(p.x + 5, p.y + bob); g.lineTo(p.x, p.y + bob + 6); g.lineTo(p.x - 5, p.y + bob); g.fill(); g.fillStyle = '#c8fff8'; g.beginPath(); g.moveTo(p.x, p.y + bob - 6); g.lineTo(p.x + 2, p.y + bob - 1); g.lineTo(p.x - 2, p.y + bob - 1); g.fill(); }
+    else if (p.k === 'tok') drawToken(g, p.x, p.y + bob, 1, t);
     else { g.globalCompositeOperation = 'lighter'; g.globalAlpha = .5; g.drawImage(glow('rgba(255,110,140,1)'), p.x - 14, p.y + bob - 14, 28, 28); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.fillStyle = '#ff6b86'; heartPath(g, p.x, p.y + bob, 6); } }
   // ground gloom
   gloomShadows(g, st.enemies, false); gloomShadows(g, st.enemies, true);
@@ -1163,13 +1287,14 @@ function drawScene(st, t, adj = 0) {
   for (const z of st.zaps) { g.strokeStyle = z.col; g.globalAlpha = 1 - z.t / .16; g.lineWidth = 3;
     g.beginPath(); for (let i = 0; i < z.pts.length - 1; i++) { const a = z.pts[i], b = z.pts[i + 1]; if (!i) g.moveTo(a.x, a.y); for (let k = 1; k <= 4; k++) { const u = k / 4; g.lineTo(a.x + (b.x - a.x) * u + (k < 4 ? (Math.random() - .5) * 10 : 0), a.y + (b.y - a.y) * u + (k < 4 ? (Math.random() - .5) * 10 : 0)); } } g.stroke(); g.strokeStyle = '#fff'; g.lineWidth = 1; g.stroke(); g.globalAlpha = 1; }
   // particles
-  for (const p of st.parts) { g.globalAlpha = Math.min(1, p.life / p.max * 1.5); g.fillStyle = p.col; if (p.kind === 'star') star4(g, p.x, p.y, p.size * 1.3); else { g.beginPath(); g.arc(p.x, p.y, p.size, 0, 6.283); g.fill(); } }
+  for (const p of st.parts) { g.globalAlpha = Math.min(1, p.life / p.max * 1.5); g.fillStyle = p.col; if (p.kind === 'star') star4(g, p.x, p.y, p.size * 1.3); else if (p.kind === 'flake') flake(g, p.x, p.y, p.size * 1.3, p.col); else if (p.kind === 'candy') candy(g, p.x, p.y, p.size, p.col, p.x * .05 + p.life * 6); else { g.beginPath(); g.arc(p.x, p.y, p.size, 0, 6.283); g.fill(); } }
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   for (const r of st.rings) { const u = r.t / r.T; g.strokeStyle = r.col; g.globalAlpha = 1 - u; g.lineWidth = r.w * (1 - u * .6); g.beginPath(); g.arc(r.x, r.y, r.r0 + (r.r1 - r.r0) * (1 - (1 - u) ** 2), 0, 6.283); g.stroke(); }
   g.globalAlpha = 1;
   g.textAlign = 'center'; g.textBaseline = 'middle';
   for (const tx of st.texts) { g.globalAlpha = 1 - Math.max(0, tx.t - .5) / .4; g.font = `900 ${tx.size}px ${FONT}`; g.lineWidth = 3; g.strokeStyle = 'rgba(15,10,30,.8)'; g.strokeText(tx.s, tx.x, tx.y - tx.t * 26); g.fillStyle = tx.col; g.fillText(tx.s, tx.x, tx.y - tx.t * 26); }
   g.globalAlpha = 1;
+  seasonOverlay(g, t);
   // joystick (screen space)
   if (joy.on && st === R) { g.setTransform(dpr, 0, 0, dpr, 0, 0); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 2; g.beginPath(); g.arc(joy.ox, joy.oy, 46, 0, 6.283); g.stroke(); const dx = joy.x - joy.ox, dy = joy.y - joy.oy, l = Math.min(46, Math.hypot(dx, dy)), a = Math.atan2(dy, dx); g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.arc(joy.ox + Math.cos(a) * l, joy.oy + Math.sin(a) * l, 18, 0, 6.283); g.fill(); }
 }
@@ -1202,7 +1327,15 @@ $('modal').addEventListener('click', e => { if (e.target.id === 'modal' && !$('m
 
 function metaAffordable() { return META.some(m => mlv(m.id) < m.max && S.coins >= metaCost(m, mlv(m.id))); }
 function passClaimable() { const tier = Math.floor(S.passXp / PASS_TIER_XP); for (let i = 0; i < Math.min(tier, PASS.length); i++) if (!S.passClaimed.includes(i) || (S.passGold && !S.passGoldClaimed.includes(i))) return true; return false; }
+function applySeason() { // title flourish, body class, event button, art caches
+  computeSeason(); gSpr.clear(); if (cv.width) buildBg(); const Z = SEASON && SEASONS[SEASON];
+  document.body.classList.toggle('season-halloween', SEASON === 'halloween'); document.body.classList.toggle('season-christmas', SEASON === 'christmas');
+  const l2 = document.querySelector('.logo .l2'), tg = document.querySelector('.logo .tag'); if (l2) l2.textContent = Z ? Z.l2 : 'BAY'; if (tg) tg.textContent = Z ? Z.tag : 'Hold the light. Poof the Gloom.';
+  const eb = $('eventBtn'); if (eb) eb.classList.toggle('hidden', !Z);
+}
 function refreshHome() {
+  refreshAdChip();
+  if (SEASON) { const Z = SEASONS[SEASON], ev = seasonEv(), nx = Z.rewards.find(r => !ev.got.includes(r.at)); $('eventTitle').textContent = `${Z.ic} ${Z.n} event`; $('eventSub').textContent = nx ? `${Z.tokIc} ${ev.tok}/${nx.at} · next: ${nx.t}` : `${Z.tokIc} ${ev.tok} · all rewards earned ✓`; $('bEv').classList.toggle('on', false); }
   $('hCoins').textContent = fmt(S.coins); $('hGems').textContent = fmt(S.gems); $('setBtn').classList.toggle('quiet', !S.music && !S.sfx);
   const H = HEROES[S.hero], owned = !!S.heroes[S.hero];
   $('heroName').textContent = H.n; $('heroRole').textContent = H.role + ' · ' + H.ab.ic + ' ' + H.ab.n;
@@ -1218,6 +1351,8 @@ $('heroPrev').onclick = () => cycleHero(-1); $('heroNext').onclick = () => cycle
 $('setBtn').onclick = () => { initAudio(); sfx.click(); openSettings(); };
 $('playBtn').onclick = () => { initAudio(); sfx.click(); if (!S.heroes[S.hero]) { openHeroes(); return; } startRun({}); };
 $('dailyBtn').onclick = () => { initAudio(); sfx.click(); openDaily(); };
+$('eventBtn').onclick = () => { initAudio(); sfx.click(); openEvent(); };
+$('adCoinBtn').onclick = () => { initAudio(); sfx.click(); openAdCoins(); };
 document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { initAudio(); sfx.click(); ({ upgrades: openUpgrades, heroes: openHeroes, skins: () => openSkins('tower'), pass: openPass, awards: openAwards, shop: () => openShop('coins') })[b.dataset.open](); });
 
 function startRun(opts) {
@@ -1260,13 +1395,14 @@ function showRevive() {
   sfx.lose(); joy.on = false;
   openModal(`<h2>The beacon went out!</h2><div class="sub" style="text-align:center">Wave ${R.wave} · ${R.kills} Gloom poofed</div>
   <div class="list">
-   ${rewardRow('Revive', 'Relight at 60% HP and blast the Gloom back. Once per run.', 'revAd', 'Revive')}
-   <div class="item"><div class="big">💎</div><div class="info"><b>Revive with gems</b><small>Relight at 60% HP and blast the Gloom back.</small></div><button class="btn" data-act="revGem" ${S.gems < 25 ? 'disabled' : ''}>${gemI}25</button></div>
-  </div><button class="secondary big-btn" data-act="giveup">No thanks, end run</button>`, true, true);
+   ${rewardRow('Revive', 'Relight at 60% HP, blast the Gloom back and carry on this run.', 'revAd', '▶ Revive')}
+   <div class="item"><div class="big">💎</div><div class="info"><b>Revive with gems</b><small>Same revive, no ad. You have ${fmt(S.gems)} gems.</small></div><button class="btn" data-act="revGem" ${S.gems < 25 ? 'disabled' : ''}>${gemI}25</button></div>
+  </div><div class="note info subnote" style="text-align:center">One revive per run. If the beacon goes out again, the run ends.</div><button class="secondary big-btn" data-act="giveup">No thanks, end run</button>`, true, true);
 }
 function finishRun() {
   hideCards(); joy.on = false;
   const cleared = R.won ? MAX_WAVES : R.wave - 1, reached = R.won ? MAX_WAVES : R.wave;
+  const evLine = SEASON ? seasonCommit(R.tokens || 0) : '';
   const coins = Math.floor(R.coins) + (R.won ? 200 : 0); R.earned = coins; R.doubled = false; let gems = R.gems + (R.won ? 10 : 0), dailyGems = 0;
   if (R.daily) { S.dailyBest[R.daily.date] = Math.max(S.dailyBest[R.daily.date] || 0, reached); if (S.dailyRewarded !== R.daily.date) { dailyGems = 3 + Math.floor(cleared / 2) + (R.won ? 10 : 0); S.dailyRewarded = R.daily.date; } }
   gems += dailyGems;
@@ -1280,8 +1416,8 @@ function finishRun() {
   openModal(`<h2>${R.won ? '🌅 Dawn breaks!' : 'The light went out'}</h2><div class="sub" style="text-align:center">${R.daily ? 'Daily Challenge · ' + R.daily.mod.n : HEROES[R.heroId].n + ' the ' + HEROES[R.heroId].role}${newBest ? ' · <b style="color:var(--amber)">New best!</b>' : ''}</div>
    <div class="stats"><div><b>${reached}</b><small>Wave reached</small></div><div><b>${R.kills}</b><small>Gloom poofed</small></div><div><b>${m}:${String(s).padStart(2, '0')}</b><small>Time</small></div><div><b>${S.best}</b><small>Best wave</small></div></div>
    <div class="rewards"><span>${coinI} +${fmt(coins)}</span><span>${gemI} +${gems}</span><span>⭐ +${xp} XP</span></div>
+   ${evLine}
    ${dailyGems ? `<div class="note info">Daily reward: +${dailyGems} gems · streak 🔥 ${S.streak}</div>` : ''}
-   <div id="dblRow">${rewardRow('Double coins', `Get another ${fmt(coins)} coins.`, 'dbl', '×2')}</div>
    <div class="row2"><button class="secondary" data-act="home">Home</button><button class="btn" data-act="again" style="font-size:16px">${R.daily ? 'Play daily again' : 'Play again'}</button></div>
    ${metaAffordable() ? '<button class="btn teal big-btn" data-act="goUpgrades" style="justify-content:center;width:100%">⬆️ You can afford a permanent upgrade!</button>' : ''}`, true, true);
 }
@@ -1303,15 +1439,16 @@ function openHeroes() {
 }
 let skinTab = 'tower';
 const lockLbl = it => it.pass === 'gold' ? '🎟️ Gold Pass' : it.pass ? 'Pass tier 8' : '';
+const seasonBtn = it => `<button class="btn off" data-act="goEvent" data-season="${it.season}">${SEASONS[it.season].ic} Event</button>`;
 function openSkins(tab) {
   skinTab = tab || skinTab; const hid = S.hero;
   const ownedHS = S.ownedHeroSkins[hid] || ['base'];
   const towerHtml = TOWER_SKINS.map(s => { const own = towerOwned(s.id), sel = S.towerSkin === s.id;
-    return `<div class="skin ${sel ? 'sel' : ''}"><canvas data-tskin="${s.id}"></canvas><b>${s.n}</b>${sel ? '<button class="btn off">Equipped</button>' : own ? `<button class="btn teal" data-act="tsel" data-id="${s.id}">Equip</button>` : s.iap ? `<button class="btn price" data-act="iap" data-id="${s.iap}">${iapPrice(s.iap)}</button>` : s.pass ? `<button class="btn off" data-act="goPass">${lockLbl(s)}</button>` : `<button class="btn" data-act="tbuy" data-id="${s.id}">${priceHtml(s.cost)}</button>`}</div>`; }).join('');
+    return `<div class="skin ${sel ? 'sel' : ''}"><canvas data-tskin="${s.id}"></canvas><b>${s.n}</b>${sel ? '<button class="btn off">Equipped</button>' : own ? `<button class="btn teal" data-act="tsel" data-id="${s.id}">Equip</button>` : s.iap ? `<button class="btn price" data-act="iap" data-id="${s.iap}">${iapPrice(s.iap)}</button>` : s.season ? seasonBtn(s) : s.pass ? `<button class="btn off" data-act="goPass">${lockLbl(s)}</button>` : `<button class="btn" data-act="tbuy" data-id="${s.id}">${priceHtml(s.cost)}</button>`}</div>`; }).join('');
   const heroHtml = HERO_SKINS[hid].map(s => { const own = ownedHS.includes(s.id), sel = (S.heroSkin[hid] || 'base') === s.id;
-    return `<div class="skin ${sel ? 'sel' : ''}"><canvas data-hskin="${s.id}"></canvas><b>${s.n}</b>${sel ? '<button class="btn off">Equipped</button>' : own ? `<button class="btn teal" data-act="hssel" data-id="${s.id}">Equip</button>` : s.pass ? `<button class="btn off" data-act="goPass">🎟️ Gold Pass</button>` : `<button class="btn" data-act="hsbuy" data-id="${s.id}">${priceHtml(s.cost)}</button>`}</div>`; }).join('');
+    return `<div class="skin ${sel ? 'sel' : ''}"><canvas data-hskin="${s.id}"></canvas><b>${s.n}</b>${sel ? '<button class="btn off">Equipped</button>' : own ? `<button class="btn teal" data-act="hssel" data-id="${s.id}">Equip</button>` : s.season ? seasonBtn(s) : s.pass ? `<button class="btn off" data-act="goPass">🎟️ Gold Pass</button>` : `<button class="btn" data-act="hsbuy" data-id="${s.id}">${priceHtml(s.cost)}</button>`}</div>`; }).join('');
   const trailHtml = TRAILS.map(s => { const own = !!S.ownedTrails[s.id], sel = S.trail === s.id;
-    return `<div class="skin ${sel ? 'sel' : ''}"><canvas data-trail="${s.id}"></canvas><b>${s.n}</b>${sel ? '<button class="btn off">Equipped</button>' : own ? `<button class="btn teal" data-act="trsel" data-id="${s.id}">Equip</button>` : s.pass ? `<button class="btn off" data-act="goPass">${lockLbl(s)}</button>` : `<button class="btn" data-act="trbuy" data-id="${s.id}">${priceHtml(s.cost)}</button>`}</div>`; }).join('');
+    return `<div class="skin ${sel ? 'sel' : ''}"><canvas data-trail="${s.id}"></canvas><b>${s.n}</b>${sel ? '<button class="btn off">Equipped</button>' : own ? `<button class="btn teal" data-act="trsel" data-id="${s.id}">Equip</button>` : s.iap ? (IAP[s.iap].season === SEASON ? `<button class="btn price" data-act="iap" data-id="${s.iap}">${iapPrice(s.iap)}</button>` : `<button class="btn off" data-act="goEvent" data-season="${IAP[s.iap].season}">${SEASONS[IAP[s.iap].season].ic} Bundle</button>`) : s.pass ? `<button class="btn off" data-act="goPass">${lockLbl(s)}</button>` : `<button class="btn" data-act="trbuy" data-id="${s.id}">${priceHtml(s.cost)}</button>`}</div>`; }).join('');
   const tb = (id, n) => `<button class="${skinTab === id ? 'on' : ''}" data-act="stab" data-id="${id}">${n}</button>`;
   openModal(`${closeBtn}<h2>Skins</h2><div class="tabs">${tb('tower', 'Beacon')}${tb('hero', HEROES[hid].n)}${tb('trail', 'Bolt trail')}</div>
    <div class="skin-grid">${skinTab === 'tower' ? towerHtml : skinTab === 'hero' ? heroHtml : trailHtml}</div><div class="note info" style="margin-top:10px">Skins are cosmetic only. You always see exactly what you're buying, and there are no random boxes.</div>`);
@@ -1369,11 +1506,12 @@ function openShop(tab) {
   shopTab = tab || shopTab;
   const row = (it, act) => `<div class="item"><div class="big">${it.ic}</div><div class="info"><b>${it.n}</b><small>${it.d}${it.id === 'reroll' && S.boosts.reroll ? ` (owned: ${S.boosts.reroll})` : ''}${it.id === 'head' && S.boosts.head ? ` (owned: ${S.boosts.head})` : ''}</small></div>${it.id === 'heroMo' && S.heroes.mo ? '<button class="btn off">Owned</button>' : `<button class="btn" data-act="${act}" data-id="${it.id}">${priceHtml(it.cost)}</button>`}</div>`;
   let body = '';
-  if (shopTab === 'coins') body = `<div class="list">${COIN_SHOP.map(i => row(i, 'cbuy')).join('')}</div>`;
+  if (shopTab === 'coins') body = `<div class="list">${adCoinsRow()}${COIN_SHOP.map(i => row(i, 'cbuy')).join('')}</div>`;
   else if (shopTab === 'gems') body = `<div class="list">${GEM_SHOP.map(i => row(i, 'gbuy')).join('')}</div><div class="note info" style="margin-top:10px">Gems come from bosses, Daily Challenges, awards and the pass.</div>`;
   else { const prow = k => { const it = IAP[k], own = iapOwned(k); return `<div class="item"><div class="big">${it.ic}</div><div class="info"><b>${it.n}</b><small>${it.d}</small></div>${own ? '<button class="btn off">Owned</button>' : `<button class="btn price" data-act="iap" data-id="${k}">${iapPrice(k)}</button>`}</div>`; };
-    const keys = Object.keys(IAP).filter(k => !IAP[k].hidden);
+    const keys = Object.keys(IAP).filter(k => !IAP[k].hidden && (!IAP[k].season || IAP[k].season === SEASON));
     body = `${NAT ? '' : '<div class="note">📱 <b>Purchases only work in the iPhone app.</b> This web version is a free preview, so nothing here can be bought.</div>'}
+    ${keys.some(k => IAP[k].tab === 'season') ? `<h3>${SEASONS[SEASON].ic} ${SEASONS[SEASON].n}: limited time</h3><div class="list">${keys.filter(k => IAP[k].tab === 'season').map(prow).join('')}</div>` : ''}
     <h3>Offers</h3><div class="list">${keys.filter(k => IAP[k].tab === 'offers').map(prow).join('')}</div>
     <h3>Pass & Club</h3><div class="list">${keys.filter(k => IAP[k].tab === 'club').map(prow).join('')}</div>
     <div class="note info subnote">Keeper's Club is an auto-renewing subscription: ${iapPrice('club')}, renews monthly until cancelled. Payment is charged to your Apple ID when you confirm. It renews automatically unless cancelled at least 24 hours before the end of the current period. Manage or cancel in your Apple ID settings (Settings › your name › Subscriptions).
@@ -1400,9 +1538,26 @@ function startDaily() {
   if (S.lastDaily !== d) { S.streak = S.lastDaily === yesterday() ? S.streak + 1 : 1; S.lastDaily = d; S.bestStreak = Math.max(S.bestStreak, S.streak); checkAch(); save(); }
   startRun({ daily: true });
 }
+function grantSeasonReward(r) { if (r.k === 'gems') S.gems += r.v; else grantReward(r); }
+function seasonCommit(n) { // add this run's seasonal items and hand out any milestones reached
+  const Z = SEASONS[SEASON], ev = seasonEv(); ev.tok += n; const got = [];
+  for (const r of Z.rewards) if (ev.tok >= r.at && !ev.got.includes(r.at)) { ev.got.push(r.at); grantSeasonReward(r); got.push(r.t); }
+  save(); if (got.length) { checkAch(); setTimeout(() => toast(`${Z.ic} Event reward: ${got.join(' + ')}!`), 400); }
+  return n || got.length ? `<div class="note info">${Z.ic} ${Z.n}: +${n} ${Z.tokIc} ${Z.tok} (total ${ev.tok})${got.length ? `<br><b>Unlocked: ${got.join(', ')}</b> (yours forever!)` : ''}</div>` : '';
+}
+function openEvent() {
+  if (!SEASON) { toast('No seasonal event right now. Check back at Halloween and Christmas!'); return; }
+  const Z = SEASONS[SEASON], ev = seasonEv(), last = Z.rewards[Z.rewards.length - 1].at, bk = 'season_' + SEASON;
+  openModal(`${closeBtn}<h2>${Z.ic} ${Z.n}</h2><div class="sub" style="text-align:center">Limited-time event · ends ${Z.end}</div>
+   <div class="note info" style="font-size:13px">During ${Z.n} the Gloom drop <b>${Z.tokIc} ${Z.tok}</b> in every run (normal or Daily). Collect them to unlock free rewards. <b>Earned skins stay yours forever</b>, even after the event ends.</div>
+   <div class="xpbar"><i style="width:${Math.min(100, ev.tok / last * 100)}%"></i></div><div class="kv"><span>Collected</span><b>${Z.tokIc} ${ev.tok}</b></div>
+   <div class="list">${Z.rewards.map(r => { const done = ev.got.includes(r.at); return `<div class="item" style="${done ? '' : 'opacity:.85'}"><div class="big">${r.k === 'gems' ? '💎' : r.k === 'skin' ? '🏮' : '🦸'}</div><div class="info"><b>${r.t}</b><small>${done ? 'Unlocked ✓' : `Collect ${r.at} ${Z.tok} (${Math.max(0, r.at - ev.tok)} to go)`}</small></div>${done ? '<button class="btn off">✓</button>' : `<button class="btn off">${Z.tokIc} ${r.at}</button>`}</div>`; }).join('')}</div>
+   ${IAP[bk] && !iapOwned(bk) ? `<h3>Seasonal bundle</h3><div class="list"><div class="item"><div class="big">${IAP[bk].ic}</div><div class="info"><b>${IAP[bk].n}</b><small>${IAP[bk].d}</small></div><button class="btn price" data-act="iap" data-id="${bk}">${iapPrice(bk)}</button></div></div>` : ''}
+   <button class="primary" data-act="evPlay">Play now</button>`);
+}
 function openSettings() {
   const tg = (k, n, ic) => `<div class="item"><div class="big">${ic}</div><div class="info"><b>${n}</b></div><button class="btn toggle ${S[k] ? 'teal' : 'off'}" data-act="toggle" data-id="${k}">${S[k] ? 'On' : 'Off'}</button></div>`;
-  openModal(`${closeBtn}<h2>Settings</h2><div class="list">${tg('music', 'Music', '🎵')}${tg('sfx', 'Sound effects', '🔊')}${tg('haptics', 'Vibration', '📳')}</div>
+  openModal(`${closeBtn}<h2>Settings</h2><div class="list">${tg('music', 'Music', '🎵')}${tg('sfx', 'Sound effects', '🔊')}${tg('haptics', 'Vibration', '📳')}${tg('seasonal', 'Seasonal themes', '🎃')}</div>
    <h3>Purchases & privacy</h3><div class="list">
     <div class="item"><div class="big">🧾</div><div class="info"><b>Restore Purchases</b><small>Get back anything you bought on another device.</small></div><button class="btn" data-act="restore">Restore</button></div>
     ${NAT && CFG.ads.enabled ? '<div class="item"><div class="big">🛡️</div><div class="info"><b>Ad privacy choices</b><small>Change your ad consent settings.</small></div><button class="btn" data-act="adPrivacy">Open</button></div>' : ''}
@@ -1416,7 +1571,7 @@ const inPausedRun = () => !!(R && R.paused && R.phase !== 'over' && !$('hud').cl
 // ================= MONETISATION (RevenueCat IAP + AdMob rewarded) =================
 // Everything here is a no-op on the web build; only the iOS app (window.BBNative from native.js) can buy or show ads.
 const priceCache = {}, productCache = {};
-let rcReady = false, adsReady = false, adsInitP = null, adLoaded = false, adBusy = false, buying = false;
+let rcReady = false, adsReady = false, adsInitP = null, adLoaded = false, adLoading = false, adBusy = false, buying = false;
 const nlog = (...a) => { if (NAT) console.log('[BB]', ...a); };
 const iapOwned = k => IAP[k].kind === 'consumable' ? false : k === 'club' ? S.vip : !!S.iap[k];
 const iapPrice = k => priceCache[k] || IAP[k].p;
@@ -1430,6 +1585,7 @@ function grantIap(k, fresh) {
   else if (k === 'mo') { S.heroes.mo = true; const o = (S.ownedHeroSkins.mo = S.ownedHeroSkins.mo || ['base']); if (!o.includes('brass')) o.push('brass'); if (!S.moGranted) { S.moGranted = true; S.gems += 50; } }
   else if (k === 'aurora') S.ownedTower.aurora = true;
   else if (k === 'pass') S.passGold = true;
+  else if (k === 'season_halloween' || k === 'season_christmas') { const tr = k === 'season_halloween' ? 'spooky' : 'candycane'; S.ownedTrails[tr] = true; if (!S.seasonGems[k]) { S.seasonGems[k] = true; S.gems += 300; } }
 }
 function applyCustomerInfo(ci) {
   if (!ci) return; const ids = new Set(ci.allPurchasedProductIdentifiers || []);
@@ -1484,47 +1640,94 @@ async function initPurchases() {
 }
 // ---- AdMob rewarded ads (optional, the player always chooses to watch) ----
 function initAds() {
-  if (!NAT || !NAT.AdMob || !CFG.ads.enabled || adFree()) return Promise.resolve(false);
+  if (!NAT || !NAT.AdMob || !CFG.ads.enabled || adFree()) return Promise.resolve(false); // owners of Ad-Free Rewards never load the SDK's ads
   if (adsInitP) return adsInitP;
   const A = NAT.AdMob;
   adsInitP = (async () => {
     try {
-      // 1) Google UMP consent (GDPR/UK GDPR), 2) Apple ATT prompt, 3) start the SDK
+      // 1) Google UMP consent message where the law needs it (UK/EEA), 2) start the SDK. Non-personalised ads only (npa), so no ATT prompt and no IDFA.
       let canAds = true;
       try { const ci = await A.requestConsentInfo({}); if (ci.isConsentFormAvailable && ci.status === 'REQUIRED') { const r = await A.showConsentForm(); if (r && r.canRequestAds === false) canAds = false; } else if (ci.canRequestAds === false) canAds = false; } catch (e) { nlog('consent', e && e.message); }
       if (CFG.ads.att) { try { const st = await A.trackingAuthorizationStatus(); if (st.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch (e) {} }
-      await A.initialize({ initializeForTesting: !!CFG.ads.testMode, maxAdContentRating: 'General', tagForUnderAgeOfConsent: false });
+      await A.initialize({ initializeForTesting: !!CFG.ads.testMode, maxAdContentRating: 'General', tagForUnderAgeOfConsent: false, tagForChildDirectedTreatment: false });
       A.setApplicationMuted && A.setApplicationMuted({ muted: !S.sfx }).catch(() => {});
       adsReady = canAds; if (adsReady) preloadAd(); return adsReady;
     } catch (e) { nlog('ads init failed', e && e.message); adsInitP = null; return false; }
   })();
   return adsInitP;
 }
-function preloadAd() { if (!adsReady || adLoaded) return; NAT.AdMob.prepareRewardVideoAd({ adId: CFG.ads.rewardedIos, isTesting: !!CFG.ads.testMode }).then(() => { adLoaded = true; }).catch(() => { adLoaded = false; }); }
-// resolves true if the player earned the reward
+const adReq = () => ({ adId: CFG.ads.rewardedIos, isTesting: !!CFG.ads.testMode, npa: CFG.ads.npa !== false });
+function preloadAd() { if (!adsReady || adLoaded || adLoading) return; adLoading = true; NAT.AdMob.prepareRewardVideoAd(adReq()).then(() => { adLoaded = true; }).catch(e => { adLoaded = false; nlog('ad load failed', e && e.message); setTimeout(preloadAd, 30000); }).finally(() => { adLoading = false; }); }
+// Native AdMob rewarded video. Resolves true ONLY when Google reports the reward was earned.
 async function watchRewarded() {
-  if (adFree()) return true;
-  if (!NAT || !CFG.ads.enabled) return 'web';
   if (adBusy) return false; adBusy = true;
+  const hs = []; let held = false;
   try {
-    if (!(await initAds())) { toast("Ads aren't available right now."); return false; }
+    if (!(await initAds())) { toast("No ad available right now. Please try again later."); return false; }
     const A = NAT.AdMob;
-    if (!adLoaded) { toast('Loading…'); await A.prepareRewardVideoAd({ adId: CFG.ads.rewardedIos, isTesting: !!CFG.ads.testMode }); }
-    adLoaded = false; audioHold = true; suspendAudio();
-    const ok = await new Promise(res => { let done = false, hd = null; const fin = v => { if (done) return; done = true; if (hd && hd.remove) hd.remove(); res(v); };
-      Promise.resolve(A.addListener('onRewardedVideoAdDismissed', () => setTimeout(() => fin(false), 700))).then(h => { hd = h; });
-      A.showRewardVideoAd().then(r => fin(!!r)).catch(() => fin(false)); });
-    return ok;
-  } catch (e) { toast("Couldn't load an ad. Please try again in a moment."); return false; }
-  finally { adBusy = false; audioHold = false; resumeAudio(); setTimeout(preloadAd, 1500); }
+    if (!adLoaded) { toast('Loading ad…'); try { await A.prepareRewardVideoAd(adReq()); } catch (e) { toast('No ad available right now. Please try again later.'); return false; } }
+    adLoaded = false; audioHold = true; held = true; suspendAudio();
+    return await new Promise(res => { let done = false, earned = false; const fin = v => { if (done) return; done = true; res(v); };
+      const on = (ev, f) => Promise.resolve(A.addListener(ev, f)).then(h => hs.push(h)).catch(() => {});
+      on('onRewardedVideoAdReward', () => { earned = true; });
+      on('onRewardedVideoAdDismissed', () => setTimeout(() => fin(earned), 700)); // reward callback can land just after dismiss
+      on('onRewardedVideoAdFailedToShow', () => { toast('The ad could not play. Please try again later.'); fin(false); });
+      A.showRewardVideoAd().then(() => { earned = true; fin(true); }).catch(() => { toast('No ad available right now. Please try again later.'); fin(false); }); });
+  } catch (e) { toast('No ad available right now. Please try again later.'); return false; }
+  finally { for (const h of hs) try { h.remove(); } catch (e) {} adBusy = false; if (held) { audioHold = false; resumeAudio(); } setTimeout(preloadAd, 1200); }
+}
+// Web preview (GitHub Pages): no real ads possible, so play a 5-second sample ad, then grant.
+function simulatedAd() {
+  if (adBusy) return Promise.resolve(false); adBusy = true; audioHold = true; suspendAudio();
+  return new Promise(res => {
+    const o = document.createElement('div'); o.id = 'adSim'; let left = 5, done = false;
+    o.innerHTML = `<div class="adsim-top"><span class="adsim-tag">Ad</span><span class="adsim-t" id="adSimT">Reward in 5</span><button class="adsim-x" data-x="1" aria-label="Close ad">✕</button></div>
+     <div class="adsim-body"><div class="adsim-art">🌊🗼✨</div><b>Your ad here</b><small>Sample ad: real ads appear in the App Store version.</small><div class="adsim-bar"><i id="adSimBar"></i></div></div>`;
+    document.body.appendChild(o); requestAnimationFrame(() => { const b = $('adSimBar'); if (b) b.style.width = '100%'; });
+    const end = ok => { if (done) return; done = true; clearInterval(iv); adBusy = false; audioHold = false; resumeAudio();
+      if (ok) { $('adSimT').textContent = 'Reward earned! ✓'; setTimeout(() => { o.remove(); res(true); }, 600); } else { o.remove(); res(false); } };
+    const iv = setInterval(() => { left--; const t = $('adSimT'); if (t) t.textContent = left > 0 ? 'Reward in ' + left : 'Reward earned! ✓'; if (left <= 0) end(true); }, 1000);
+    o.querySelector('[data-x]').onclick = () => { if (left > 0) toast('Ad closed early, so no reward.'); end(left <= 0); };
+  });
+}
+// The ONLY two places ads are used: revive once per run, and 40 coins once per day. Always opt-in.
+function showAd() {
+  if (adFree()) return Promise.resolve(true);              // Ad-Free Rewards / Keeper's Club: reward without the video
+  if (NAT && CFG.ads.enabled && NAT.AdMob) return watchRewarded();
+  if (NAT) return Promise.resolve(true);                    // native build compiled without the AdMob plugin: reward is free
+  return simulatedAd();                                     // web preview
 }
 function rewardRow(title, desc, act, btn) {
-  const free = adFree(), web = !NAT || !CFG.ads.enabled;
-  if (NAT && !CFG.ads.enabled && !free) { if (act === 'dbl') return ''; return `<div class="item"><div class="big">✨</div><div class="info"><b>Free ${title.toLowerCase()}</b><small>${desc}</small></div><button class="btn teal" data-act="${act}">${btn}</button></div>`; }
-  const ic = free ? '⚡' : '📺', t = free ? `${title} (ad-free)` : web ? title : `Watch an ad: ${title.toLowerCase()}`;
-  const d = free ? desc : web ? desc + (act === 'revAd' ? ' Free in this web preview.' : ' Ads only play in the iPhone app.') : desc + ' Optional, and only if you want it.';
-  return `<div class="item"><div class="big">${ic}</div><div class="info"><b>${t}</b><small>${d}</small></div><button class="btn teal" data-act="${act}">${btn}</button></div>`;
+  const free = adFree() || (NAT && !CFG.ads.enabled), web = !NAT;
+  const ic = free ? '⚡' : '📺', t = free ? `${title} (no ad needed)` : `Watch an ad to ${title.toLowerCase()}`;
+  const d = free ? desc : desc + (web ? ' Sample ad in this web preview.' : ' Optional, and only if you want it.');
+  return `<div class="item"><div class="big">${ic}</div><div class="info"><b>${t}</b><small>${d}</small></div><button class="btn teal" data-act="${act}">${free ? btn.replace('▶ ', '') : btn}</button></div>`;
 }
+// ---- daily 40 coins for watching an ad (once per local calendar day) ----
+const AD_COINS = 40;
+const adCoinsReady = () => S.adCoinsDay !== today();
+const msToMidnight = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1) - d; };
+const fmtLeft = ms => { const t = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m ${String(x).padStart(2, '0')}s`; };
+function adCoinsRow() {
+  const free = adFree() || (NAT && !CFG.ads.enabled);
+  if (!adCoinsReady()) return `<div class="item adcoins used" id="adCoinsRow"><div class="big">✅</div><div class="info"><b>Daily ${AD_COINS} coins collected</b><small>Come back tomorrow! New coins in <span class="adLeft">${fmtLeft(msToMidnight())}</span></small></div><button class="btn off" disabled>⏳</button></div>`;
+  return `<div class="item adcoins" id="adCoinsRow"><div class="big">${free ? '⚡' : '📺'}</div><div class="info"><b>${free ? `Free ${AD_COINS} coins (no ad needed)` : `Watch an ad for ${AD_COINS} coins`}</b><small>Once a day, totally optional.${!NAT && !free ? ' Sample ad in this web preview.' : ''}</small></div><button class="btn teal" data-act="adCoins">${free ? '' : '▶ '}+${AD_COINS} ${coinI}</button></div>`;
+}
+function refreshAdChip() {
+  const c = $('adCoinBtn'); if (!c) return; const ready = adCoinsReady();
+  c.classList.toggle('ready', ready); $('adCoinTxt').textContent = ready ? `+${AD_COINS}` : fmtLeft(msToMidnight());
+  c.setAttribute('aria-label', ready ? `Watch an ad for ${AD_COINS} coins` : 'Daily ad coins collected, come back tomorrow');
+}
+function openAdCoins() {
+  openModal(`${closeBtn}<h2>Free coins</h2><div class="sub" style="text-align:center">${coinI} <b>${fmt(S.coins)}</b></div><div class="list">${adCoinsRow()}</div>
+   <div class="note info subnote">Ads are only ever used for this and for one revive per run. No banners, no pop-up ads.</div>`);
+}
+let adDayWas = today();
+setInterval(() => { // live countdown + flip back to "ready" at midnight
+  const ready = adCoinsReady(), d = today(); refreshAdChip();
+  document.querySelectorAll('.adLeft').forEach(e => { e.textContent = fmtLeft(msToMidnight()); });
+  if (d !== adDayWas) { adDayWas = d; const r = $('adCoinsRow'); if (r && ready) r.outerHTML = adCoinsRow(); }
+}, 1000);
 // ---- app lifecycle: pause + mute when the app goes to the background ----
 function onBackground() { if (R && R.phase === 'wave' && !R.paused && !$('hud').classList.contains('hidden')) { R.paused = true; joy.on = false; openPause(); } suspendAudio(); }
 function onForeground() { last = performance.now(); resumeAudio(); }
@@ -1549,13 +1752,15 @@ $('sheet').addEventListener('click', e => {
   if (a === 'close') { sfx.click(); closeModal(); }
   else if (a === 'introGo') { S.introSeen = true; save(); sfx.click(); closeModal(); setTimeout(initAds, 800); }
   else if (a === 'settings') { sfx.click(); openSettings(); }
-  else if (a === 'toggle') { S[id] = !S[id]; save(); applyAudio(); if (id === 'haptics' && S.haptics) buzz(30); if (NAT && NAT.AdMob && adsReady && id === 'sfx') NAT.AdMob.setApplicationMuted({ muted: !S.sfx }).catch(() => {}); sfx.click();
+  else if (a === 'toggle') { S[id] = !S[id]; save(); applyAudio(); if (id === 'seasonal') { applySeason(); if (seasonOverride) toast('Dev override ?season= is active, so the toggle applies after removing it.'); } if (id === 'haptics' && S.haptics) buzz(30); if (NAT && NAT.AdMob && adsReady && id === 'sfx') NAT.AdMob.setApplicationMuted({ muted: !S.sfx }).catch(() => {}); sfx.click();
     openSettings(); }
   else if (a === 'backPause') { sfx.click(); openPause(); }
   else if (a === 'restore') { sfx.click(); restorePurchases(); }
   else if (a === 'adPrivacy') { sfx.click(); initAds().then(() => NAT.AdMob.showPrivacyOptionsForm()).catch(() => toast('Privacy options are not needed in your region.')); }
   else if (a === 'iap') { sfx.click(); iapBuy(id); }
   else if (a === 'goPass') { sfx.click(); openPass(); }
+  else if (a === 'goEvent') { sfx.click(); if (SEASON && SEASON === b.dataset.season) openEvent(); else toast(`${SEASONS[b.dataset.season].ic} Earned in the ${SEASONS[b.dataset.season].n} event. It comes back every year!`); }
+  else if (a === 'evPlay') { sfx.click(); startRun({}); }
   else if (a === 'trsel') { S.trail = id; save(); sfx.click(); openSkins(); }
   else if (a === 'trbuy') { const s = TRAILS.find(x => x.id === id); if (pay(s.cost)) { S.ownedTrails[id] = true; S.trail = id; S.skinCount++; checkAch(); save(); openSkins(); } }
   else if (a === 'gclaim') { const i = +id; if (!S.passGold || S.passGoldClaimed.includes(i) || Math.floor(S.passXp / PASS_TIER_XP) <= i) return; S.passGoldClaimed.push(i); grantReward(PASS[i][1]); sfx.buy(); buzz(30); checkAch(); save(); toast('Unlocked: ' + PASS[i][1].t.replace(/<[^>]+>/g, '')); openPass(); }
@@ -1575,10 +1780,9 @@ $('sheet').addEventListener('click', e => {
   else if (a === 'dailyGo') { sfx.click(); startDaily(); }
   else if (a === 'resume') { sfx.click(); closeModal(); R.paused = false; }
   else if (a === 'quitrun') { closeModal(); R.paused = false; endRun(false); }
-  else if (a === 'revAd') { if (!R || R.phase !== 'revive') return; b.disabled = true; watchRewarded().then(ok => { if (!R || R.phase !== 'revive') return; if (ok) { closeModal(); revive(); buzz(40); } else b.disabled = false; }); }
-  else if (a === 'dbl') { if (!R || R.doubled) return; b.disabled = true; watchRewarded().then(ok => { if (ok === 'web') { toast('Ads only play in the iPhone app.'); b.disabled = false; return; } if (!ok || !R || R.doubled) { b.disabled = false; return; } R.doubled = true; S.coins += R.earned; S.totalCoins += R.earned; save(); sfx.buy(); buzz(30);
-      const r = $('dblRow'); if (r) r.innerHTML = `<div class="note info">✓ Coins doubled: +${fmt(R.earned)} more</div>`; const rw = $('sheet').querySelector('.rewards span'); if (rw) rw.innerHTML = `${coinI} +${fmt(R.earned * 2)}`; }); }
-  else if (a === 'revGem') { if (S.gems >= 25) { S.gems -= 25; save(); closeModal(); revive(); } }
+  else if (a === 'revAd') { if (!R || R.phase !== 'revive' || R.revived) return; b.disabled = true; showAd().then(ok => { if (!R || R.phase !== 'revive' || R.revived) return; if (ok) { closeModal(); revive(); buzz(40); addText(TX, TY - 60, 'Revived!', '#ffe08a', 20); } else b.disabled = false; }); }
+  else if (a === 'adCoins') { if (!adCoinsReady()) return; b.disabled = true; showAd().then(ok => { if (ok && adCoinsReady()) { S.coins += AD_COINS; S.adCoinsDay = today(); save(); sfx.buy ? sfx.buy() : sfx.click(); toast(`+${AD_COINS} coins! Come back tomorrow for more.`); refreshHome(); const r = $('adCoinsRow'); if (r) r.outerHTML = adCoinsRow(); const sub = $('sheet') && $('sheet').querySelector('.sub'); if (sub && sub.innerHTML.includes('coin')) sub.innerHTML = sub.innerHTML.replace(/<b>[\d,]+<\/b>/, `<b>${fmt(S.coins)}</b>`); } else if (!ok) b.disabled = false; }); }
+  else if (a === 'revGem') { if (R && R.phase === 'revive' && !R.revived && S.gems >= 25) { S.gems -= 25; save(); closeModal(); revive(); } }
   else if (a === 'giveup') { closeModal(); endRun(false); }
   else if (a === 'again') { sfx.click(); if (R && R.daily) startDaily(); else startRun({}); }
   else if (a === 'home') { sfx.click(); closeModal(); R = null; showScreen('home'); }
@@ -1621,16 +1825,16 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 window.addEventListener('resize', resize);
-resize(); homeSt = makeHomeSt(); showScreen('home'); if (!S.introSeen) openIntro(); nativeBoot();
+resize(); applySeason(); homeSt = makeHomeSt(); showScreen('home'); if (!S.introSeen) openIntro(); nativeBoot();
 setTimeout(resize, 300); // safe-area insets can settle after first layout on iOS
 requestAnimationFrame(frame);
 
 // test / balancing hooks
-window.__bb = { get S() { return S; }, get R() { return R; }, hook, simulate, botPickIndex, pickOffer, useAbility, startRun, startDaily, dailyInfo, save, step,
+window.__bb = { get audio() { return AC ? AC.state : 'none'; }, get audioHold() { return audioHold; }, openAdCoins, adCoinsReady, showAd, AD_COINS, get S() { return S; }, get R() { return R; }, hook, simulate, botPickIndex, pickOffer, useAbility, startRun, startDaily, dailyInfo, save, step,
   speedRun(n) { hook.speed = n; }, get dpr() { return dpr; },
   // art + debug helpers used by scripts/ (icon, splash and App Store screenshot rendering, perf tests)
   art: { drawHero, drawTower, drawGloom, glow, star4, hexA, heroSkin, HERO_SKINS, TOWER_SKINS, ETYPES, TRAILS, mulberry32 },
-  get music() { return Music.mood; }, IAP, CFG, grantReward, grantIap, applyCustomerInfo, openShop, openPass, openSkins, openSettings, refreshHome, showCards, spawnEnemy: (...a) => spawnEnemy(...a), drawScene: (...a) => drawScene(...a) };
+  get music() { return Music.mood; }, get season() { return SEASON; }, SEASONS, seasonFor, openEvent, seasonCommit, IAP, CFG, grantReward, grantIap, applyCustomerInfo, openShop, openPass, openSkins, openSettings, refreshHome, showCards, spawnEnemy: (...a) => spawnEnemy(...a), drawScene: (...a) => drawScene(...a) };
 })();
 
 </script>
